@@ -7,7 +7,6 @@ let
 in
 pkgs.mkShell {
   buildInputs = [
-    taskpkgs.hello
     taskpkgs.task
   ];
   shellHook = ''

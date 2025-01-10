@@ -53,6 +53,7 @@ echo.info() {
 }
 
 cur.project() {
+  touch "$CUR_PROJECT"
   curProj="$(cat "$CUR_PROJECT" || echo "Default")"
   checkValue=$(echo "$curProj" | xargs)
   if [ "$checkValue" == "" ]; then
