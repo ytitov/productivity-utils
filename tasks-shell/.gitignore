@@ -3,3 +3,4 @@ testtask*
 .taskrc
 .task
 .tmp
+*.nix

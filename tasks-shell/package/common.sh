@@ -1,14 +1,14 @@
 export TASKRC=${TASKRC:-~/.taskrc}
 export TASKDATA=${TASKDATA:-~/.tasks}
 export CUR_PROJECT=$TASKDATA/.cur_project
+export CUR_TASK_ID=$TASKDATA/.cur_task_id
 touch "$TASKRC"
 PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
-INSTALL_CFG=$PROG_SOURCE/install.cfg
+export INSTALL_CFG=$PROG_SOURCE/install.cfg
 export NOTES_DIR="$TASKDATA/.notes";
+export TMP_FOLDER=$TASKDATA/temp;
+mkdir -p "$TMP_FOLDER"
 mkdir -p "$NOTES_DIR"
-
-#export CUR_TASK=$(cat $);
-
 
 # check if it already has the fields we need
 checkfields="$(grep -i uda.parentTaskId < "$TASKRC")"
@@ -63,22 +63,18 @@ cur.project() {
   fi
 }
 
+cur.taskId() {
+  touch "$CUR_TASK_ID"
+  curTask="$(cat "$CUR_TASK_ID" || echo "0")"
+  checkValue=$(echo "$curTask" | xargs)
+  if [ "$checkValue" == "" ]; then
+    echo "0"
+  else
+    echo "$checkValue"
+  fi
+}
+
 set.project() {
   echo "$*" > "$CUR_PROJECT"
 }
 
-#
-# enable workitems is found
-#
-checkworkitem="$(grep -i uda.workitemid < "$TASKRC")"
-enable_workitems="$(grep -i 'enableWorkitems=true' < "$INSTALL_CFG")"
-
-if [ ! "$enable_workitems" == "" ]; then
-  if [ "$checkworkitem" == "" ]; then
-    echo "### Do not edit below ###" >> "$TASKRC"
-    task config uda.workitemid.label Workitem
-    task config uda.workitemid.description Workitem ID
-    task config uda.workitemid.type string
-    echo "### END Do not edit ^^^" >> "$TASKRC"
-  fi
-fi
