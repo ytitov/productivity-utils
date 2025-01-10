@@ -1,0 +1,20 @@
+uda.workitemid.label=Workitem
+uda.workitemid.description=Workitem ID
+uda.workitemid.type=string
+
+# these are for the todo's attached to each task
+uda.parentTaskId.label=Parent Task
+uda.parentTaskId.description=The actual task this entry belongs to
+uda.parentTaskId.type=string
+
+# each todo is assigned a parent task id, and is tagged as a todo
+report.todos.columns=parentTaskId,id,due,description
+report.todos.labels=pId,id,due,description
+report.todos.sort=parentTaskId,id
+report.todos.filter=( -DELETED ) and ( +todo )
+
+report.list.columns=id,workitemid,start.age,entry.age,depends.indicator,priority,project,tags,recur.indicator,scheduled.countdown,due,until.remaining,description.count,urgency
+report.list.context=1
+report.list.description=Most details of tasks
+report.list.filter=status:pending -WAITING -todo
+report.list.labels=ID,wi,Active,Age,D,P,Project,Tags,R,Sch,Due,Until,Description,Urg
