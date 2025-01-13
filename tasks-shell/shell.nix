@@ -8,6 +8,7 @@ in
 pkgs.mkShell {
   buildInputs = [
     taskpkgs.task
+    pkgs.jq
   ];
   shellHook = ''
     export TASKRC="testtaskrc"

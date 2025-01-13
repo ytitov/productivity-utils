@@ -1,7 +1,7 @@
 export TASKRC=${TASKRC:-~/.taskrc}
 export TASKDATA=${TASKDATA:-~/.tasks}
 export CUR_PROJECT=$TASKDATA/.cur_project
-export CUR_TASK_ID=$TASKDATA/.cur_task_id
+export CUR_TASK=$TASKDATA/.cur_task
 touch "$TASKRC"
 PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
 export INSTALL_CFG=$PROG_SOURCE/install.cfg
@@ -23,12 +23,6 @@ if [ "$checkfields" == "" ]; then
   task config uda.parentTaskId.type string
 
   # each todo is assigned a parent task id, and is tagged as a todo
-  task config report.todos.columns parentTaskId,id,due,description
-  task config report.todos.labels pId,id,due,description
-  task config report.todos.sort parentTaskId,id
-  task config report.todos.filter \( -DELETED \) and \( +todo \)
-
-# each todo is assigned a parent task id, and is tagged as a todo
   task config report.todos.columns parentTaskId,id,due,description
   task config report.todos.labels pId,id,due,description
   task config report.todos.sort parentTaskId,id
@@ -78,3 +72,35 @@ set.project() {
   echo "$*" > "$CUR_PROJECT"
 }
 
+cur.task() {
+  curTask="$(cat "$CUR_TASK" || echo "")"
+  checkValue=$(echo "$curTask" | xargs)
+  if [ "$checkValue" == "" ]; then
+    echo "0"
+  else
+    echo "$checkValue"
+  fi
+}
+
+set.task() {
+  echo "$*" > "$CUR_TASK"
+}
+select.latest.task() {
+  task export newest | jq -c '.[0].id' > "$CUR_TASK"
+}
+
+#
+# enable workitems is found
+#
+checkworkitem="$(grep -i uda.workitemid < "$TASKRC")"
+enable_workitems="$(grep -i 'enableWorkitems=true' < "$INSTALL_CFG")"
+
+if [ ! "$enable_workitems" == "" ]; then
+  if [ "$checkworkitem" == "" ]; then
+    echo "### Do not edit below ###" >> "$TASKRC"
+    task config uda.workitemid.label Workitem
+    task config uda.workitemid.description Workitem ID
+    task config uda.workitemid.type string
+    echo "### END Do not edit ^^^" >> "$TASKRC"
+  fi
+fi

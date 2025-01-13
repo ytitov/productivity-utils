@@ -30,6 +30,7 @@ let
     curProj="$(cur.project)"
     echo "Project: $curProj -- Adding a task with args: $ARGS"
     task project:$curProj add "$ARGS"
+    select.latest.task
   '';
   project.set = pkgs.writeShellScriptBin "project.set" ''
     ARGS="$*"
@@ -78,6 +79,7 @@ stdenv.mkDerivation {
     ln -s ${pkgs.taskwarrior3}/bin/* $out/bin/task
     cat ${commonShFunctions} > $out/common.sh
     cp ${task.add}/bin/* $out/bin
+    cp ${task.todo}/bin/* $out/bin
     cp ${task.select}/bin/* $out/bin
     cp ${task.show}/bin/* $out/bin
     cp ${task.help}/bin/* $out/bin
