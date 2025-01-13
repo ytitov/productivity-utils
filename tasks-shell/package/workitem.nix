@@ -21,9 +21,9 @@ let
     PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
     source ${commonShFunctions}
     source ${commonShWorkitems}
-    echo "workitem.import current workitem: $curWi"
+    echo.logtofile "workitem.import current workitem: $curWi"
     workitemid=$(workitem.load $1)
-    echo "Load result: $workitemid"
+    echo.logtofile "Load result: $workitemid"
     import_as_task $workitemid
   '';
   help = pkgs.writeShellScriptBin "workitem.help" ./workitem.help.sh;
@@ -34,11 +34,12 @@ let
     source ${commonShFunctions}
     source ${commonShWorkitems}
     lastTaskId="$(cur.taskId)"
-    adofile="$TMP_FOLDER/workitem.$1".json
-    echo "$(az boards work-item show --id $1 --organization='${orgNameUrl}' --expand all)" > $adofile
+    workItemId=''${1:-MISSING_WORKITEM_ID}
+    adofile="$TMP_FOLDER/workitem.$workItemId".json
+    echo "$(az boards work-item show --id $workItemId --organization='${orgNameUrl}' --expand all)" > $adofile
     result="$(cat $adofile)"
     cp $adofile "$CUR_WORKITEM"
-    if [[ $result =~ ^ERROR ]]; then
+    if [[ $result =~ ERROR ]]; then
       echo.error "Ran into a problem loading workitem $1 -- $result"
     else
       echo "$adofile"

@@ -14,24 +14,25 @@ let
   '';
   selectedTaskId = "${tmpFolder}/selected-task-id";
   task.select = pkgs.writeShellScriptBin "task.select" ''
-    echo "Is taskrc set: $TASKRC"
     source ${commonShFunctions}
     ${pkgs.taskwarrior3}/bin/task -todo list
     read -p "Type the id of the feature task to select: " id
     echo "$id" > "${selectedTaskId}"
-    echo "Stored id in ${selectedTaskId}"
+    echo.logtofile "Stored id in ${selectedTaskId}"
   '';
   task.help = pkgs.writeShellScriptBin "task.help" ./task.help.sh;
   task.show = pkgs.writeShellScriptBin "task.show" ./task.show.sh;
+
   task.add = pkgs.writeShellScriptBin "task.add" ''
     ARGS=$@
     PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
     source "$PROG_SOURCE"/common.sh
     curProj="$(cur.project)"
-    echo "Project: $curProj -- Adding a task with args: $ARGS"
+    echo.logtofile "[Project: $curProj] -- Adding a task with args: $ARGS"
     task project:$curProj add "$ARGS"
     select.latest.task
   '';
+
   task.todo = pkgs.writeShellScriptBin "task.todo" ''
     ARGS=$@
     PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
@@ -44,7 +45,7 @@ let
     PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
     source "$PROG_SOURCE"/common.sh
     set.project $ARGS 
-    echo "Project set to $(cur.project)"
+    echo.logtofile "Project set to $(cur.project)"
   '';
   az-cli-pkg = with pkgs;
     (azure-cli.withExtensions [
@@ -64,10 +65,12 @@ stdenv.mkDerivation {
     task.add
     pkgs.toml-cli
     az-cli-pkg
+    pkgs.jq
   ];
   installPhase = if enableWorkitems == true then ''
     mkdir -p $out/bin
     ln -s ${pkgs.taskwarrior3}/bin/* $out/bin
+    ln -s ${pkgs.jq}/bin/* $out/bin
     ln -s ${az-cli-pkg}/bin/* $out/bin
     cat ${commonShFunctions} > $out/common.sh
     cat ${commonShWorkitems} >> $out/common.sh
@@ -83,7 +86,8 @@ stdenv.mkDerivation {
   '' 
     else ''
     mkdir -p $out/bin
-    ln -s ${pkgs.taskwarrior3}/bin/* $out/bin/task
+    ln -s ${pkgs.taskwarrior3}/bin/* $out/bin
+    ln -s ${pkgs.jq}/bin/* $out/bin
     cat ${commonShFunctions} > $out/common.sh
     cp ${task.add}/bin/* $out/bin
     cp ${task.todo}/bin/* $out/bin

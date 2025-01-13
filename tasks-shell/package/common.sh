@@ -46,6 +46,11 @@ echo.info() {
   echo " 💡 $*"
 }
 
+echo.logtofile() {
+  echo "$*" >> "$TASKDATA"/log.txt
+}
+
+
 cur.project() {
   touch "$CUR_PROJECT"
   curProj="$(cat "$CUR_PROJECT" || echo "Default")"
@@ -58,8 +63,7 @@ cur.project() {
 }
 
 cur.taskId() {
-  touch "$CUR_TASK_ID"
-  curTask="$(cat "$CUR_TASK_ID" || echo "0")"
+  curTask="$(cat "$CUR_TASK" | jq -c '.id' || echo "0")"
   checkValue=$(echo "$curTask" | xargs)
   if [ "$checkValue" == "" ]; then
     echo "0"
@@ -85,8 +89,15 @@ cur.task() {
 set.task() {
   echo "$*" > "$CUR_TASK"
 }
+
 select.latest.task() {
-  task export newest | jq -c '.[0].id' > "$CUR_TASK"
+  task export newest | jq -c '.[0]' > "$CUR_TASK"
+}
+
+select.task.withId() {
+  if [ ! "$1" == "" ]; then
+    task export id:"$1" | jq -c '.[0]' > "$CUR_TASK"
+  fi
 }
 
 #
