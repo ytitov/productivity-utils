@@ -22,6 +22,12 @@ if [ "$checkfields" == "" ]; then
   task config uda.parentTaskId.description The actual task this entry belongs to
   task config uda.parentTaskId.type string
 
+  # these are for the todo's attached to each task
+  # UUID seem to be more global, adding to fiture proof
+  task config uda.parentTaskUuid.label Parent Task
+  task config uda.parentTaskUuid.description The actual task this entry belongs to
+  task config uda.parentTaskUuid.type string
+
   # each todo is assigned a parent task id, and is tagged as a todo
   task config report.todos.columns parentTaskId,id,due,description
   task config report.todos.labels pId,id,due,description
@@ -63,7 +69,17 @@ cur.project() {
 }
 
 cur.taskId() {
-  curTask="$(cat "$CUR_TASK" | jq -c '.id' || echo "0")"
+curTask="$(cur.task | jq -c '.id' || echo "0")"
+  checkValue=$(echo "$curTask" | xargs)
+  if [ "$checkValue" == "" ]; then
+    echo "0"
+  else
+    echo "$checkValue"
+  fi
+}
+
+cur.taskUuid() {
+  curTask="$(cur.task | jq -c '.uuid' || echo "0")"
   checkValue=$(echo "$curTask" | xargs)
   if [ "$checkValue" == "" ]; then
     echo "0"
@@ -77,7 +93,7 @@ set.project() {
 }
 
 cur.task() {
-  curTask="$(cat "$CUR_TASK" || echo "")"
+  curTask="$(cat "$CUR_TASK" || echo "{}")"
   checkValue=$(echo "$curTask" | xargs)
   if [ "$checkValue" == "" ]; then
     echo "0"
@@ -96,7 +112,8 @@ select.latest.task() {
 
 select.task.withId() {
   if [ ! "$1" == "" ]; then
-    task export id:"$1" | jq -c '.[0]' > "$CUR_TASK"
+    task "$1" export | jq -c '.[0]' > "$CUR_TASK"
+    echo.logtofile "Selected task with id $1 : $(cat "$CUR_TASK")"
   fi
 }
 

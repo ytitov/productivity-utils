@@ -12,13 +12,11 @@ let
   installConfig = ''
     enableWorkitems=${if enableWorkitems == true then "true" else "false"}
   '';
-  selectedTaskId = "${tmpFolder}/selected-task-id";
   task.select = pkgs.writeShellScriptBin "task.select" ''
     source ${commonShFunctions}
     ${pkgs.taskwarrior3}/bin/task -todo list
     read -p "Type the id of the feature task to select: " id
-    echo "$id" > "${selectedTaskId}"
-    echo.logtofile "Stored id in ${selectedTaskId}"
+    select.task.withId "$id"
   '';
   task.help = pkgs.writeShellScriptBin "task.help" ./task.help.sh;
   task.show = pkgs.writeShellScriptBin "task.show" ./task.show.sh;
@@ -38,8 +36,9 @@ let
     PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
     source "$PROG_SOURCE"/common.sh
     curProj="$(cur.project)"
-    task project:$curProj parentTaskId:"$(cur.taskId)" +todo add "$ARGS"
+    task project:$curProj parentTaskId:"$(cur.taskId)" parentTaskUuid:"$(cur.taskUuid)" +todo add "$ARGS"
   '';
+
   project.set = pkgs.writeShellScriptBin "project.set" ''
     ARGS="$*"
     PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
