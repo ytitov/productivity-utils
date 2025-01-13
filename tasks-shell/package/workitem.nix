@@ -11,23 +11,28 @@
   ...
 }:
 let
+  commonShFunctions = ./common.sh;
+  commonShWorkitems = ./common.workitems.sh;
   areaPathList = pkgs.lib.strings.concatStringsSep "," areaPaths;
   workitemBaseUrl = "https://dev.azure.com/${orgName}/${adoProject}/_workitems/edit";
   orgNameUrl="https://dev.azure.com/${orgName}";
   importWi = pkgs.writeShellScriptBin "workitem.import" ''
     ARGS=$@
     PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
-    source "$PROG_SOURCE"/common.sh
+    source ${commonShFunctions}
+    source ${commonShWorkitems}
     echo "workitem.import current workitem: $curWi"
-    workitem.load $1
+    workitemid=$(workitem.load $1)
+    echo "Load result: $workitemid"
+    import_as_task $workitemid
   '';
   help = pkgs.writeShellScriptBin "workitem.help" ./workitem.help.sh;
 
   # https://learn.microsoft.com/en-us/cli/azure/boards/work-item?view=azure-cli-latest
   load = pkgs.writeShellScriptBin "workitem.load" ''
-    echo "param: $1"
     PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
-    source "$PROG_SOURCE"/common.sh
+    source ${commonShFunctions}
+    source ${commonShWorkitems}
     lastTaskId="$(cur.taskId)"
     adofile="$TMP_FOLDER/workitem.$1".json
     echo "$(az boards work-item show --id $1 --organization='${orgNameUrl}' --expand all)" > $adofile

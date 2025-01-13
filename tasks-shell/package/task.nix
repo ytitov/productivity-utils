@@ -25,8 +25,7 @@ let
   task.show = pkgs.writeShellScriptBin "task.show" ./task.show.sh;
   task.add = pkgs.writeShellScriptBin "task.add" ''
     ARGS=$@
-    PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
-    source "$PROG_SOURCE"/common.sh
+    source ${commonShFunctions}
     curProj="$(cur.project)"
     echo "Project: $curProj -- Adding a task with args: $ARGS"
     task project:$curProj add "$ARGS"
@@ -34,8 +33,7 @@ let
   '';
   project.set = pkgs.writeShellScriptBin "project.set" ''
     ARGS="$*"
-    PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
-    source "$PROG_SOURCE"/common.sh
+    source ${commonShFunctions}
     set.project $ARGS 
     echo "Project set to $(cur.project)"
   '';
@@ -62,8 +60,7 @@ stdenv.mkDerivation {
     mkdir -p $out/bin
     ln -s ${pkgs.taskwarrior3}/bin/* $out/bin
     ln -s ${az-cli-pkg}/bin/* $out/bin
-    cat ${commonShFunctions} > $out/common.sh
-    cat ${commonShWorkitems} >> $out/common.sh
+    ln -s ${pkgs.jq}/bin/* $out/bin
     cp ${task.add}/bin/* $out/bin
     cp ${task.select}/bin/* $out/bin
     cp ${task.show}/bin/* $out/bin
@@ -77,7 +74,7 @@ stdenv.mkDerivation {
     else ''
     mkdir -p $out/bin
     ln -s ${pkgs.taskwarrior3}/bin/* $out/bin/task
-    cat ${commonShFunctions} > $out/common.sh
+    ln -s ${pkgs.jq}/bin/* $out/bin
     cp ${task.add}/bin/* $out/bin
     cp ${task.todo}/bin/* $out/bin
     cp ${task.select}/bin/* $out/bin
