@@ -31,6 +31,13 @@ let
     task project:$curProj add "$ARGS"
     select.latest.task
   '';
+  task.todo = pkgs.writeShellScriptBin "task.todo" ''
+    ARGS=$@
+    PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
+    source "$PROG_SOURCE"/common.sh
+    curProj="$(cur.project)"
+    task project:$curProj parentTaskId:"$(cur.task)" +todo add "$ARGS"
+  '';
   project.set = pkgs.writeShellScriptBin "project.set" ''
     ARGS="$*"
     source ${commonShFunctions}
