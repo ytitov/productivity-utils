@@ -38,7 +38,7 @@ let
     PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
     source "$PROG_SOURCE"/common.sh
     curProj="$(cur.project)"
-    task project:$curProj parentTaskId:"$(cur.task)" +todo add "$ARGS"
+    task project:$curProj parentTaskId:"$(cur.taskId)" +todo add "$ARGS"
   '';
   project.set = pkgs.writeShellScriptBin "project.set" ''
     ARGS="$*"
@@ -75,6 +75,7 @@ stdenv.mkDerivation {
     cat ${commonShFunctions} > $out/common.sh
     cat ${commonShWorkitems} >> $out/common.sh
     cp ${task.add}/bin/* $out/bin
+    cp ${task.todo}/bin/* $out/bin
     cp ${task.select}/bin/* $out/bin
     cp ${task.show}/bin/* $out/bin
     cp ${task.help}/bin/* $out/bin
@@ -83,8 +84,7 @@ stdenv.mkDerivation {
     cp ${workitemCommands.help}/bin/* $out/bin
     cp ${workitemCommands.load}/bin/* $out/bin
     echo '${installConfig}' > $out/install.cfg
-  '' 
-    else ''
+  '' else ''
     mkdir -p $out/bin
     ln -s ${pkgs.taskwarrior3}/bin/* $out/bin
     ln -s ${pkgs.jq}/bin/* $out/bin
@@ -96,6 +96,5 @@ stdenv.mkDerivation {
     cp ${task.help}/bin/* $out/bin
     cp ${project.set}/bin/* $out/bin
     echo '${installConfig}' > $out/install.cfg
-  '' 
-      ;
+  '';
 }
