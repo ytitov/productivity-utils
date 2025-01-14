@@ -18,13 +18,7 @@ export CUR_WORKITEM="$TASKDATA/.currentWorkitem.json";
 
 cur.workitem() {
   touch "$CUR_WORKITEM"
-  curWi="$(cat "$CUR_WORKITEM" || echo "no-workitem-selected")"
-  checkValue=$(echo "$curWi" | xargs)
-  if [ "$checkValue" == "" ]; then
-    echo "no-workitem-selected"
-  else
-    echo "$checkValue"
-  fi
+  cat "$CUR_WORKITEM" || echo '{}'
 }
 
 cur.workitemId() {

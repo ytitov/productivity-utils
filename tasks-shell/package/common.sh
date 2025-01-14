@@ -22,12 +22,6 @@ if [ "$checkfields" == "" ]; then
   task config uda.parentTaskId.description The actual task this entry belongs to
   task config uda.parentTaskId.type string
 
-  # these are for the todo's attached to each task
-  # UUID seem to be more global, adding to fiture proof
-  task config uda.parentTaskUuid.label Parent Task
-  task config uda.parentTaskUuid.description The actual task this entry belongs to
-  task config uda.parentTaskUuid.type string
-
   # each todo is assigned a parent task id, and is tagged as a todo
   task config report.todos.columns parentTaskId,id,due,description
   task config report.todos.labels pId,id,due,description
@@ -93,13 +87,7 @@ set.project() {
 }
 
 cur.task() {
-  curTask="$(cat "$CUR_TASK" || echo "{}")"
-  checkValue=$(echo "$curTask" | xargs)
-  if [ "$checkValue" == "" ]; then
-    echo "0"
-  else
-    echo "$checkValue"
-  fi
+  cat "$CUR_TASK" || echo "{}"
 }
 
 set.task() {
@@ -131,4 +119,14 @@ if [ ! "$enable_workitems" == "" ]; then
     task config uda.workitemid.type string
     echo "### END Do not edit ^^^" >> "$TASKRC"
   fi
+fi
+checktaskuuid="$(grep -i uda.parentTaskUuid < "$TASKRC")"
+if [ "$checktaskuuid" == "" ]; then
+  echo "### Do not edit below ###" >> "$TASKRC"
+  # these are for the todo's attached to each task
+  # UUID seem to be more global, adding to fiture proof
+  task config uda.parentTaskUuid.label Parent Task
+  task config uda.parentTaskUuid.description The actual task this entry belongs to
+  task config uda.parentTaskUuid.type string
+  echo "### END Do not edit ^^^" >> "$TASKRC"
 fi
