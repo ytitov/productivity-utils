@@ -39,15 +39,28 @@ import_as_task() {
   startDate="$(cat $adofile | jq -c '.fields."Microsoft.VSTS.Scheduling.StartDate"')"
   local dueDate="$(cat "$adofile" | jq -c '.fields."Custom.SLACERTDate"')"
   local extraParams="project:$projname"
+  local status=""
   if [[ ! "$dueDate" == "null" ]]; then
     extraParams=" $extraParams due:$dueDate"
   fi
   if [[ "$state" =~ Closed ]]; then
     echo.logtofile "Looks like this is Closed, marking the task as done"
-    extraParams=" $extraParams status:done"
+    status="status:done "
   fi
+  numExist=$(task workitemid:"$workitemid" -DELETED export | jq -c length)
+  numDeleted=$(task workitemid:"$workitemid" +DELETED export | jq -c length)
   echo.logtofile "Running a create or modify in order to import the workitem as a task: extraParams: $extraParams, workitemid: $workitemid, title: $title"
-  taskid=$(task \( workitemid:"$workitemid" \) modify "$extraParams" "workitem-$workitemid $title" || task "$extraParams" workitem:"$workitemid" add "workitem-$workitemid $title" || echo "ERROR: importing ado item failed")
-  echo.logtofile "Created a task and got a result of: $taskid"
-  select.latest.task
+  if [ ! "$numDeleted" == "0" ]; then
+    echo.error "This task was imported and deleted already or there was an error retreiving it"
+  elif [ "$numExist" == "0" ]; then
+    echo.logtofile Creating the workitem as a new task
+    task "$extraParams" workitem:"$workitemid" "$status" add "workitem-$workitemid $title"  
+    select.latest.task
+  elif [ "$numExist" == "1" ]; then
+    echo.logtofile Updating the existing task
+    task \( workitemid:"$workitemid" \) -DELETED modify "$extraParams" "$status" "workitem-$workitemid $title" 
+    select.latest.task
+  else 
+    echo.error "Came up with more than one task attached to a workitem, not sure how to import"
+  fi
 }
