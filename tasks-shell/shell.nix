@@ -12,6 +12,8 @@ pkgs.mkShell {
   shellHook = ''
     export TASKRC="testtaskrc"
     export TASKDATA="testtaskdata"
+    export EDITOR="nvim"
+    export TASK_EXPORT_FOLDER=/export/shared/task-export
     echo "taskrc is set to   $TASKRC"
     echo "taskdata is set to $TASKDATA"
   '';

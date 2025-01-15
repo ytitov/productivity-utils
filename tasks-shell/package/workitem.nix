@@ -18,7 +18,6 @@ let
   orgNameUrl="https://dev.azure.com/${orgName}";
   importWi = pkgs.writeShellScriptBin "workitem.import" ''
     ARGS=$@
-    PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
     source ${commonShFunctions}
     source ${commonShWorkitems}
     echo.logtofile "workitem.import current workitem: $curWi"
@@ -30,7 +29,6 @@ let
 
   # https://learn.microsoft.com/en-us/cli/azure/boards/work-item?view=azure-cli-latest
   load = pkgs.writeShellScriptBin "workitem.load" ''
-    PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
     source ${commonShFunctions}
     source ${commonShWorkitems}
     lastTaskId="$(cur.taskId)"

@@ -1,4 +1,10 @@
 echo "
+💡 Task configuration:
+  🔹 'ENV.TASKDATA': $TASKDATA
+  🔹 'ENV.TASKRC': $TASKRC
+  🔹 'ENV.NOTES_DIR': $NOTES_DIR
+  🔹 'cur.task': $(cur.task)
+
 💡 Operating on a Task:
   🔹 'task.help' shows this message
   🔹 'task.show' shows the selected task and the related todos

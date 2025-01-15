@@ -7,8 +7,10 @@ PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
 export INSTALL_CFG=$PROG_SOURCE/install.cfg
 export NOTES_DIR="$TASKDATA/.notes";
 export TMP_FOLDER=$TASKDATA/temp;
+export TASK_EXPORT_FOLDER=${TASK_EXPORT_FOLDER:-~/task-export}
 mkdir -p "$TMP_FOLDER"
 mkdir -p "$NOTES_DIR"
+mkdir -p "$TASK_EXPORT_FOLDER"
 
 # check if it already has the fields we need
 checkfields="$(grep -i uda.parentTaskId < "$TASKRC")"
@@ -41,14 +43,17 @@ fi
 echo.error() {
   echo " 🚨 $*"
 }
+export -f echo.error
 
 echo.info() {
   echo " 💡 $*"
 }
+export -f echo.info
 
 echo.logtofile() {
   echo "$*" >> "$TASKDATA"/log.txt
 }
+export -f echo.logtofile
 
 
 cur.project() {
@@ -61,6 +66,7 @@ cur.project() {
     echo "$checkValue"
   fi
 }
+export -f cur.project
 
 cur.taskId() {
 curTask="$(cur.task | jq -c '.id' || echo "0")"
@@ -71,6 +77,7 @@ curTask="$(cur.task | jq -c '.id' || echo "0")"
     echo "$checkValue"
   fi
 }
+export -f cur.taskId
 
 cur.taskUuid() {
   curTask="$(cur.task | jq -c '.uuid' || echo "0")"
@@ -81,22 +88,27 @@ cur.taskUuid() {
     echo "$checkValue"
   fi
 }
+export -f cur.taskUuid
 
 set.project() {
   echo "$*" > "$CUR_PROJECT"
 }
+export -f set.project
 
 cur.task() {
   cat "$CUR_TASK" || echo "{}"
 }
+export -f cur.task
 
 set.task() {
   echo "$*" > "$CUR_TASK"
 }
+export -f set.task
 
 select.latest.task() {
   task export newest | jq -c '.[0]' > "$CUR_TASK"
 }
+export -f select.latest.task
 
 select.task.withId() {
   if [ ! "$1" == "" ]; then
@@ -104,6 +116,7 @@ select.task.withId() {
     echo.logtofile "Selected task with id $1 : $(cat "$CUR_TASK")"
   fi
 }
+export -f select.task.withId
 
 #
 # enable workitems is found

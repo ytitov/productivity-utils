@@ -6,9 +6,7 @@
 } @inputs:
 let
   commonShFunctions = ./common.sh;
-  commonShWorkitems = ./common.workitems.sh;
   workitemCommands = import ./workitem.nix inputs;
-  tmpFolder = ".tmp";
   installConfig = ''
     enableWorkitems=${if enableWorkitems == true then "true" else "false"}
   '';
@@ -18,13 +16,20 @@ let
     read -p "Type the id of the feature task to select: " id
     select.task.withId "$id"
   '';
-  task.help = pkgs.writeShellScriptBin "task.help" ./task.help.sh;
-  task.show = pkgs.writeShellScriptBin "task.show" ./task.show.sh;
+  taskHelpSh = ./task.help.sh;
+  task.help = pkgs.writeShellScriptBin "task.help" ''
+    source ${commonShFunctions}
+    ${taskHelpSh} 
+  '';
+  taskShowSh = ./task.show.sh;
+  task.show = pkgs.writeShellScriptBin "task.show" ''
+    source ${commonShFunctions}
+    ${taskShowSh}
+  '';
 
   task.add = pkgs.writeShellScriptBin "task.add" ''
     ARGS=$@
-    PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
-    source "$PROG_SOURCE"/common.sh
+    source ${commonShFunctions}
     curProj="$(cur.project)"
     echo.logtofile "[Project: $curProj] -- Adding a task with args: $ARGS"
     task project:$curProj add "$ARGS"
@@ -33,16 +38,19 @@ let
 
   task.todo = pkgs.writeShellScriptBin "task.todo" ''
     ARGS=$@
-    PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
-    source "$PROG_SOURCE"/common.sh
+    source ${commonShFunctions}
     curProj="$(cur.project)"
     task project:$curProj parentTaskId:"$(cur.taskId)" parentTaskUuid:"$(cur.taskUuid)" +todo add "$ARGS"
   '';
 
+  task.notes = pkgs.writeShellScriptBin "task.notes" ''
+    source ${commonShFunctions}
+    curProj="$(cur.project)"
+    $EDITOR "$NOTES_DIR/$(cur.taskId).md"
+  '';
   project.set = pkgs.writeShellScriptBin "project.set" ''
     ARGS="$*"
-    PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
-    source "$PROG_SOURCE"/common.sh
+    source ${commonShFunctions}
     set.project $ARGS 
     echo.logtofile "Project set to $(cur.project)"
   '';
@@ -51,6 +59,14 @@ let
       azure-cli.extensions.aks-preview
       azure-cli.extensions.azure-devops
     ]);
+  maybeWorkitemScripts = if enableWorkitems == true then ''
+    echo "Installing workitem extras"
+    ln -s ${az-cli-pkg}/bin/* $out/bin
+    cp ${workitemCommands.importWi}/bin/* $out/bin
+    cp ${workitemCommands.help}/bin/* $out/bin
+    cp ${workitemCommands.load}/bin/* $out/bin
+  '' else ''
+  '';
 in
 stdenv.mkDerivation {
   pname = "wrapped-tasks";
@@ -62,38 +78,23 @@ stdenv.mkDerivation {
     task.select
     task.show
     task.add
+    task.notes
     pkgs.toml-cli
     az-cli-pkg
     pkgs.jq
   ];
-  installPhase = if enableWorkitems == true then ''
+  installPhase = ''
     mkdir -p $out/bin
     ln -s ${pkgs.taskwarrior3}/bin/* $out/bin
     ln -s ${pkgs.jq}/bin/* $out/bin
-    ln -s ${az-cli-pkg}/bin/* $out/bin
-    cat ${commonShFunctions} > $out/common.sh
-    cat ${commonShWorkitems} >> $out/common.sh
     cp ${task.add}/bin/* $out/bin
     cp ${task.todo}/bin/* $out/bin
     cp ${task.select}/bin/* $out/bin
     cp ${task.show}/bin/* $out/bin
     cp ${task.help}/bin/* $out/bin
-    cp ${project.set}/bin/* $out/bin
-    cp ${workitemCommands.importWi}/bin/* $out/bin
-    cp ${workitemCommands.help}/bin/* $out/bin
-    cp ${workitemCommands.load}/bin/* $out/bin
-    echo '${installConfig}' > $out/install.cfg
-  '' else ''
-    mkdir -p $out/bin
-    ln -s ${pkgs.taskwarrior3}/bin/* $out/bin
-    ln -s ${pkgs.jq}/bin/* $out/bin
-    cat ${commonShFunctions} > $out/common.sh
-    cp ${task.add}/bin/* $out/bin
-    cp ${task.todo}/bin/* $out/bin
-    cp ${task.select}/bin/* $out/bin
-    cp ${task.show}/bin/* $out/bin
-    cp ${task.help}/bin/* $out/bin
+    cp ${task.notes}/bin/* $out/bin
     cp ${project.set}/bin/* $out/bin
     echo '${installConfig}' > $out/install.cfg
+    ${maybeWorkitemScripts}
   '';
 }

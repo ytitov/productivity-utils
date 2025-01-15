@@ -20,10 +20,12 @@ cur.workitem() {
   touch "$CUR_WORKITEM"
   cat "$CUR_WORKITEM" || echo '{}'
 }
+export -f cur.workitem
 
 cur.workitemId() {
   cur.workitem | jq -c '.id'
 }
+export -f cur.workitemId
 
 import_as_task() {
   local projname="notset"
@@ -64,3 +66,4 @@ import_as_task() {
     echo.error "Came up with more than one task attached to a workitem, not sure how to import"
   fi
 }
+export -f import_as_task
