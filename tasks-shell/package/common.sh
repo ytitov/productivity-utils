@@ -16,7 +16,6 @@ export GLOBAL_TASKRC_PATH="$(readlink -f "$GLOBAL_TASKRC")"
 
 # check if there was a global config file specified
 if [ -f "$GLOBAL_TASKRC_PATH" ]; then
-  echo "detected a global task rc"
   # if the requested taskrc doesn't exist we can import the global one
   # and allow the rest of the process to add the customizations
   if [ ! -f "$TASKRC" ]; then
