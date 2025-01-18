@@ -8,8 +8,12 @@ in
 pkgs.mkShell {
   buildInputs = [
     taskpkgs.task
+    pkgs.figlet
+    pkgs.lolcat
   ];
   shellHook = ''
+    figlet "MyTasks" | lolcat
+    export GLOBAL_TASKRC=~/.taskrc
     export TASKRC="testtaskrc"
     export TASKDATA="testtaskdata"
     export EDITOR="nvim"

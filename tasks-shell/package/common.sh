@@ -1,8 +1,8 @@
+export GLOBAL_TASKRC=${GLOBAL_TASKRC:-~/.taskrc}
 export TASKRC=${TASKRC:-~/.taskrc}
 export TASKDATA=${TASKDATA:-~/.tasks}
 export CUR_PROJECT=$TASKDATA/.cur_project
 export CUR_TASK=$TASKDATA/.cur_task
-touch "$TASKRC"
 PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
 export INSTALL_CFG=$PROG_SOURCE/install.cfg
 export NOTES_DIR="$TASKDATA/.notes";
@@ -11,6 +11,23 @@ export TASK_EXPORT_FOLDER=${TASK_EXPORT_FOLDER:-~/task-export}
 mkdir -p "$TMP_FOLDER"
 mkdir -p "$NOTES_DIR"
 mkdir -p "$TASK_EXPORT_FOLDER"
+
+export GLOBAL_TASKRC_PATH="$(readlink -f "$GLOBAL_TASKRC")"
+
+# check if there was a global config file specified
+if [ -f "$GLOBAL_TASKRC_PATH" ]; then
+  echo "detected a global task rc"
+  # if the requested taskrc doesn't exist we can import the global one
+  # and allow the rest of the process to add the customizations
+  if [ ! -f "$TASKRC" ]; then
+    echo "Looks like there is a global task rc specified at $GLOBAL_TASKRC"
+    cat "$GLOBAL_TASKRC" > "$TASKRC"
+  fi
+else
+  echo "NOT detected a global task rc"
+  # otherwise just ensure that the local one exists
+  touch "$TASKRC"
+fi
 
 # check if it already has the fields we need
 checkfields="$(grep -i uda.parentTaskId < "$TASKRC")"
