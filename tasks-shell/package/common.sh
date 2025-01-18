@@ -47,11 +47,11 @@ if [ "$checkfields" == "" ]; then
   task config report.todos.sort parentTaskId,id
   task config report.todos.filter \( -DELETED \) and \( +todo \)
 
-  task config report.list.columns id,workitemid,start.age,entry.age,depends.indicator,priority,project,tags,recur.indicator,scheduled.countdown,due,until.remaining,description.count,urgency
+  task config report.list.columns id,start.age,entry.age,depends.indicator,priority,project,tags,recur.indicator,scheduled.countdown,due,until.remaining,description.count,urgency
   task config report.list.context 1
   task config report.list.description Most details of tasks
   task config report.list.filter status:pending -WAITING -todo
-  task config report.list.labels ID,wi,Active,Age,D,P,Project,Tags,R,Sch,Due,Until,Description,Urg
+  task config report.list.labels ID,Active,Age,D,P,Project,Tags,R,Sch,Due,Until,Description,Urg
 
   echo "### END Do not edit ^^^" >> "$TASKRC"
 fi
@@ -147,6 +147,12 @@ if [ ! "$enable_workitems" == "" ]; then
     task config uda.workitemid.label Workitem
     task config uda.workitemid.description Workitem ID
     task config uda.workitemid.type string
+
+    task config report.list.columns id,workitemid,start.age,entry.age,depends.indicator,priority,project,tags,recur.indicator,scheduled.countdown,due,until.remaining,description.count,urgency
+    task config report.list.context 1
+    task config report.list.description Most details of tasks
+    task config report.list.filter status:pending -WAITING -todo
+    task config report.list.labels ID,wi,Active,Age,D,P,Project,Tags,R,Sch,Due,Until,Description,Urg
     echo "### END Do not edit ^^^" >> "$TASKRC"
   fi
 fi
