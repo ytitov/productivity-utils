@@ -48,12 +48,18 @@ let
     curProj="$(cur.project)"
     $EDITOR "$NOTES_DIR/$(cur.taskId).md"
   '';
-  project.set = pkgs.writeShellScriptBin "project.set" ''
+  set.project = pkgs.writeShellScriptBin "set.project" ''
     ARGS="$*"
-    source ${commonShFunctions}
-    set.project $ARGS 
-    echo.logtofile "Project set to $(cur.project)"
+    if [ ! "$@" == "" ]; then
+      source ${commonShFunctions}
+      set_project $ARGS 
+      echo.logtofile "Project set to $(cur.project)"
+    else
+      echo "You must specify the project you want"
+      task projects 2> /dev/null
+    fi
   '';
+
   az-cli-pkg = with pkgs;
     (azure-cli.withExtensions [
       azure-cli.extensions.aks-preview
@@ -67,6 +73,7 @@ let
     cp ${workitemCommands.load}/bin/* $out/bin
   '' else ''
   '';
+  
 in
 stdenv.mkDerivation {
   pname = "wrapped-tasks";
@@ -74,7 +81,7 @@ stdenv.mkDerivation {
   src = ./.;
   buildInputs = [
     pkgs.taskwarrior3
-    project.set
+    set.project
     task.select
     task.show
     task.add
@@ -92,7 +99,7 @@ stdenv.mkDerivation {
     cp ${task.show}/bin/* $out/bin
     cp ${task.help}/bin/* $out/bin
     cp ${task.notes}/bin/* $out/bin
-    cp ${project.set}/bin/* $out/bin
+    cp ${set.project}/bin/* $out/bin
     echo '${installConfig}' > $out/install.cfg
     ${maybeWorkitemScripts}
   '';

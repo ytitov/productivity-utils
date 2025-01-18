@@ -1,18 +1,25 @@
+export TASKS_HOME=${TASKS_HOME:-~/.tasks}
 export GLOBAL_TASKRC=${GLOBAL_TASKRC:-~/.taskrc}
-export TASKRC=${TASKRC:-~/.taskrc}
-export TASKDATA=${TASKDATA:-~/.tasks}
+export TASKRC=$TASKS_HOME/.taskrc-generated
+export TASKDATA=$TASKS_HOME/taskdata
 export CUR_PROJECT=$TASKDATA/.cur_project
 export CUR_TASK=$TASKDATA/.cur_task
 PROG_SOURCE=$(dirname "$(dirname "$(readlink -f "$(which task.select)")")")
 export INSTALL_CFG=$PROG_SOURCE/install.cfg
 export NOTES_DIR="$TASKDATA/.notes";
 export TMP_FOLDER=$TASKDATA/temp;
-export TASK_EXPORT_FOLDER=${TASK_EXPORT_FOLDER:-~/task-export}
 mkdir -p "$TMP_FOLDER"
 mkdir -p "$NOTES_DIR"
-mkdir -p "$TASK_EXPORT_FOLDER"
 
 export GLOBAL_TASKRC_PATH="$(readlink -f "$GLOBAL_TASKRC")"
+
+if [ ! -d "$TASKS_HOME" ] || [ ! -d "$TASKDATA" ] || [ ! -f "$TASKRC" ]; then
+  echo "Looks like we need to do some setup"
+  echo "Expecting TASK_HOME:  $TASKS_HOME"
+  echo "          TASKDATA:   $TASKDATA"
+  echo "          TASKRC:     $TASKRC"
+  read -rp "Proceed to setting things up? Hit anything or press ctrl-c to opt out"
+fi
 
 # check if there was a global config file specified
 if [ -f "$GLOBAL_TASKRC_PATH" ]; then
@@ -106,10 +113,10 @@ cur.taskUuid() {
 }
 export -f cur.taskUuid
 
-set.project() {
+set_project() {
   echo "$*" > "$CUR_PROJECT"
 }
-export -f set.project
+export -f set_project
 
 cur.task() {
   cat "$CUR_TASK" || echo "{}"
