@@ -3,7 +3,7 @@
   pkgs ? import <nixpkgs> { },
 }:
 let
-  taskpkgs = import ./package.nix;
+  taskpkgs = import ./package.nix { enableWorkitems = false; };
 in
 pkgs.mkShell {
   buildInputs = [
