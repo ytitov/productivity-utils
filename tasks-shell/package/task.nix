@@ -80,9 +80,8 @@ stdenv.mkDerivation {
     task.add
     task.notes
     pkgs.toml-cli
-    az-cli-pkg
     pkgs.jq
-  ];
+  ] ++ (if enableWorkitems == true then [ az-cli-pkg ] else [ ]);
   installPhase = ''
     mkdir -p $out/bin
     ln -s ${pkgs.taskwarrior3}/bin/* $out/bin
