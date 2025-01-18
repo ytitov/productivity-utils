@@ -93,6 +93,7 @@ stdenv.mkDerivation {
     mkdir -p $out/bin
     ln -s ${pkgs.taskwarrior3}/bin/* $out/bin
     ln -s ${pkgs.jq}/bin/* $out/bin
+    cp ${commonShFunctions} $out/common.sh
     cp ${task.add}/bin/* $out/bin
     cp ${task.todo}/bin/* $out/bin
     cp ${task.select}/bin/* $out/bin

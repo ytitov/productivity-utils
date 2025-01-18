@@ -1,5 +1,5 @@
 export TASKS_HOME=${TASKS_HOME:-~/.tasks}
-export GLOBAL_TASKRC=${GLOBAL_TASKRC:-~/.taskrc}
+export GLOBAL_TASKRC=$TASKS_HOME/.taskrc
 export TASKRC=$TASKS_HOME/.taskrc-generated
 export TASKDATA=$TASKS_HOME/taskdata
 export CUR_PROJECT=$TASKDATA/.cur_project
@@ -18,26 +18,18 @@ if [ ! -d "$TASKS_HOME" ] || [ ! -d "$TASKDATA" ] || [ ! -f "$TASKRC" ]; then
   echo "Expecting TASK_HOME:  $TASKS_HOME"
   echo "          TASKDATA:   $TASKDATA"
   echo "          TASKRC:     $TASKRC"
+  # delete the generated one so we can start from scratch
+  touch "$GLOBAL_TASKRC"
+  cp "$GLOBAL_TASKRC" "$TASKRC"
+  cat "$TASKRC"
   read -rp "Proceed to setting things up? Hit anything or press ctrl-c to opt out"
-fi
-
-# check if there was a global config file specified
-if [ -f "$GLOBAL_TASKRC_PATH" ]; then
-  # if the requested taskrc doesn't exist we can import the global one
-  # and allow the rest of the process to add the customizations
-  if [ ! -f "$TASKRC" ]; then
-    echo "Looks like there is a global task rc specified at $GLOBAL_TASKRC"
-    cat "$GLOBAL_TASKRC" > "$TASKRC"
-  fi
-else
-  echo "NOT detected a global task rc"
-  # otherwise just ensure that the local one exists
-  touch "$TASKRC"
 fi
 
 # check if it already has the fields we need
 checkfields="$(grep -i uda.parentTaskId < "$TASKRC")"
 if [ "$checkfields" == "" ]; then
+  echo "Showing current taskrc"
+  cat "$TASKRC"
   echo "Adding required configs to task warrior"
   echo "turning confirmation to off.  Feel free to turn it back on if you wish"
   echo "### Do not edit below ###" >> "$TASKRC"
